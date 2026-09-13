@@ -1,47 +1,121 @@
-export default function Page() {
-  return (
-    <main
-      style={{
-        colorScheme: 'light dark',
-        position: 'relative',
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'light-dark(#fff, #000)',
-        color: 'light-dark(#000, #fff)',
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        style={{ width: 80, height: 80 }}
-        width={80}
-        height={80}
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: 'calc(50% + 56px)',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'light-dark(#71717a, #a1a1aa)',
-        }}
-      >
-        Your v0 generation will show here.
-      </p>
-    </main>
-  )
+'use client'
+
+import { useMemo, useState } from 'react'
+import {
+  Activity,
+  AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  Clock3,
+  Command,
+  FileText,
+  Filter,
+  LayoutDashboard,
+  ListFilter,
+  Menu,
+  MoreHorizontal,
+  Phone,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  UserRound,
+  Users,
+  X,
+  Zap,
+} from 'lucide-react'
+
+type Status = 'Confirmed' | 'Needs attention' | 'No-show risk' | 'Resolved'
+type Appointment = { id: number; initials: string; name: string; type: string; time: string; date: string; status: Status; score: number; phone: string; attempts: number; location: string }
+
+const appointments: Appointment[] = [
+  { id: 1, initials: 'JM', name: 'Jordan Miller', type: 'Initial consultation', time: '9:00 AM', date: 'Today', status: 'Confirmed', score: 92, phone: '(415) 555-0198', attempts: 1, location: 'North Clinic' },
+  { id: 2, initials: 'AR', name: 'Avery Rodriguez', type: 'Follow-up visit', time: '10:30 AM', date: 'Today', status: 'No-show risk', score: 38, phone: '(415) 555-0144', attempts: 3, location: 'North Clinic' },
+  { id: 3, initials: 'SP', name: 'Sofia Patel', type: 'Annual check-up', time: '11:15 AM', date: 'Today', status: 'Confirmed', score: 86, phone: '(415) 555-0112', attempts: 1, location: 'Eastside Office' },
+  { id: 4, initials: 'DB', name: 'Daniel Brooks', type: 'New patient intake', time: '1:00 PM', date: 'Today', status: 'Needs attention', score: 56, phone: '(415) 555-0171', attempts: 2, location: 'North Clinic' },
+  { id: 5, initials: 'LC', name: 'Lena Chen', type: 'Medication review', time: '2:30 PM', date: 'Today', status: 'Confirmed', score: 94, phone: '(415) 555-0163', attempts: 1, location: 'Eastside Office' },
+  { id: 6, initials: 'KW', name: 'Kai Williams', type: 'Follow-up visit', time: '8:30 AM', date: 'Tomorrow', status: 'Confirmed', score: 78, phone: '(415) 555-0136', attempts: 1, location: 'North Clinic' },
+]
+
+const activity = [
+  ['10:42 AM', 'Call completed', 'Avery Rodriguez', 'No confirmation received', 'warning'],
+  ['10:39 AM', 'Appointment confirmed', 'Lena Chen', 'Confirmed via phone', 'success'],
+  ['10:31 AM', 'Reminder sent', 'Daniel Brooks', 'SMS + voice reminder', 'info'],
+  ['10:18 AM', 'Call completed', 'Jordan Miller', 'Confirmed attendance', 'success'],
+]
+
+function StatusPill({ status }: { status: Status }) {
+  const styles = { Confirmed: 'bg-emerald-500/10 text-emerald-400 ring-emerald-400/20', 'Needs attention': 'bg-amber-500/10 text-amber-400 ring-amber-400/20', 'No-show risk': 'bg-rose-500/10 text-rose-400 ring-rose-400/20', Resolved: 'bg-slate-500/10 text-slate-300 ring-slate-400/20' }
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${styles[status]}`}><span className="size-1.5 rounded-full bg-current" />{status}</span>
 }
+
+function Logo() { return <div className="flex items-center gap-2.5"><div className="grid size-8 place-items-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"><ShieldCheck size={18} /></div><span className="text-[15px] font-semibold tracking-tight text-white">NoShow<span className="text-indigo-400">Guard</span></span></div> }
+
+function Sparkline({ up = true }: { up?: boolean }) { return <svg viewBox="0 0 90 28" className={`h-7 w-24 ${up ? 'text-emerald-400' : 'text-rose-400'}`} fill="none" aria-hidden="true"><path d={up ? 'M1 23C12 20 14 22 23 16S32 19 42 13s10 3 18-3 12 2 28-8' : 'M1 5c10 4 14 3 23 10s12-1 20 4 14-3 20 2 12-4 25 2'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg> }
+
+function KpiCard({ label, value, change, sub, up = true, icon: Icon }: { label: string; value: string; change: string; sub: string; up?: boolean; icon: typeof Activity }) { return <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4 shadow-xl shadow-black/5"><div className="flex items-start justify-between"><div className="grid size-8 place-items-center rounded-lg bg-indigo-500/10 text-indigo-300"><Icon size={16} /></div><Sparkline up={up} /></div><div className="mt-4 flex items-end justify-between"><div><p className="text-[12px] text-slate-400">{label}</p><p className="mt-1 text-2xl font-semibold tracking-tight text-white">{value}</p></div><span className={`mb-1 flex items-center text-[11px] font-medium ${up ? 'text-emerald-400' : 'text-rose-400'}`}>{up ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}{change}</span></div><p className="mt-2 text-[11px] text-slate-500">{sub}</p></div> }
+
+function App() {
+  const [active, setActive] = useState('Dashboard')
+  const [collapsed, setCollapsed] = useState(false)
+  const [selected, setSelected] = useState<Appointment | null>(null)
+  const [query, setQuery] = useState('')
+  const [range, setRange] = useState('Today')
+  const [showAdd, setShowAdd] = useState(false)
+  const [showCommand, setShowCommand] = useState(false)
+  const [toast, setToast] = useState('')
+
+  const filtered = useMemo(() => appointments.filter((a) => [a.name, a.type, a.status].some((v) => v.toLowerCase().includes(query.toLowerCase())) && (range === 'All' || a.date === range)), [query, range])
+  const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2600) }
+
+  const nav = [
+    ['Dashboard', LayoutDashboard], ['Appointments', CalendarDays], ['Call Log', Phone], ['Settings', Settings],
+  ] as const
+
+  return <div className="min-h-screen bg-[#080b14] text-slate-200">
+    <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-white/[0.07] bg-[#0b0f1a] transition-all lg:flex ${collapsed ? 'w-[76px]' : 'w-[236px]'}`}>
+      <div className="flex h-16 items-center px-5">{collapsed ? <div className="grid size-8 place-items-center rounded-xl bg-indigo-500 text-white"><ShieldCheck size={18} /></div> : <Logo />}</div>
+      <div className="px-3"><button onClick={() => setShowAdd(true)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-3 py-2.5 text-[12px] font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"> <Plus size={16} />{!collapsed && 'Add appointment'}</button></div>
+      <nav className="mt-7 flex-1 px-3"> <p className={`mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600 ${collapsed ? 'text-center' : ''}`}>{collapsed ? '•' : 'Workspace'}</p>{nav.map(([label, Icon]) => <button key={label} onClick={() => setActive(label)} title={label} className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[12px] font-medium transition ${active === label ? 'bg-indigo-500/15 text-indigo-300' : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'} ${collapsed ? 'justify-center' : ''}`}><Icon size={17} />{!collapsed && label}</button>)}</nav>
+      {!collapsed && <div className="m-3 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><div className="flex items-center gap-2 text-[11px] font-medium text-slate-300"><span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px] shadow-emerald-400" />Calendar connected</div><p className="mt-2 text-[10px] leading-relaxed text-slate-500">Google Calendar · North Clinic</p><button onClick={() => notify('Calendar sync is up to date')} className="mt-3 flex items-center gap-1 text-[10px] font-medium text-indigo-300">Manage connection <ChevronRight size={12} /></button></div>}
+      <button onClick={() => setCollapsed(!collapsed)} className="m-3 flex items-center justify-center rounded-lg border border-white/[0.07] py-2 text-slate-500 hover:text-white">{collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}</button>
+    </aside>
+
+    <div className={`${collapsed ? 'lg:pl-[76px]' : 'lg:pl-[236px]'}`}>
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/[0.07] bg-[#080b14]/90 px-4 backdrop-blur-xl sm:px-7"><div className="flex items-center gap-3"><button className="text-slate-400 lg:hidden"><Menu size={20} /></button><div className="lg:hidden"><Logo /></div><div className="hidden items-center gap-2 text-[12px] text-slate-500 sm:flex"><span>Workspace</span><ChevronRight size={13} /><span className="text-slate-200">{active}</span></div></div><div className="flex items-center gap-2"><button onClick={() => setShowCommand(true)} className="hidden h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 text-[11px] text-slate-500 hover:text-slate-300 sm:flex"><Search size={14} /> Search anything <kbd className="ml-4 rounded border border-white/10 px-1.5 py-0.5 text-[9px]">⌘ K</kbd></button><button onClick={() => notify('No new notifications')} className="grid size-9 place-items-center rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-white"><Bell size={17} /></button><div className="mx-1 h-5 w-px bg-white/10" /><button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-white/[0.06]"><div className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-indigo-400 to-cyan-400 text-[10px] font-bold text-slate-950">AK</div><ChevronDown size={13} className="text-slate-500" /></button></div></header>
+
+      <main className="mx-auto max-w-[1480px] p-4 sm:p-7">
+        {active === 'Dashboard' && <>
+          <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="mb-2 flex items-center gap-2 text-[11px] font-medium text-indigo-300"><span className="size-1.5 rounded-full bg-indigo-400" />Tuesday, September 13, 2026</p><h1 className="text-2xl font-semibold tracking-tight text-white sm:text-[28px]">Good morning, Alex</h1><p className="mt-1 text-[13px] text-slate-500">Here&apos;s what&apos;s happening with your appointments.</p></div><div className="flex items-center gap-2"><button onClick={() => setRange(range === 'Today' ? 'Tomorrow' : 'Today')} className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 text-[11px] font-medium text-slate-300"><CalendarDays size={14} />{range}<ChevronDown size={13} /></button><button onClick={() => notify('Dashboard data refreshed')} className="grid size-9 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.025] text-slate-400 hover:text-white"><RefreshCw size={14} /></button></div></div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><KpiCard label="Appointments today" value="24" change="12.5%" sub="vs. 21 last Tuesday" icon={CalendarDays} /><KpiCard label="Confirmation rate" value="87.5%" change="4.2%" sub="vs. 83.3% last week" icon={Check} /><KpiCard label="At-risk appointments" value="3" change="20.0%" sub="1 fewer than yesterday" up={false} icon={AlertCircle} /><KpiCard label="Recovered this month" value="18" change="28.6%" sub="$4,320 estimated value" icon={Zap} /></div>
+          <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_320px]">
+            <section className="min-w-0 rounded-2xl border border-white/[0.07] bg-white/[0.025]"><div className="flex flex-col gap-3 border-b border-white/[0.07] p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-sm font-semibold text-white">Upcoming appointments</h2><p className="mt-1 text-[11px] text-slate-500">{filtered.length} appointments requiring attention</p></div><div className="flex items-center gap-2"><div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.08] px-2.5"><Search size={13} className="text-slate-500" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter appointments" className="w-32 bg-transparent text-[11px] outline-none placeholder:text-slate-600" /></div><button className="grid size-8 place-items-center rounded-lg border border-white/[0.08] text-slate-400"><SlidersHorizontal size={14} /></button></div></div><div className="flex items-center gap-1 border-b border-white/[0.07] px-4 pt-3"><button onClick={() => setRange('Today')} className={`border-b-2 px-3 pb-3 text-[11px] font-medium ${range === 'Today' ? 'border-indigo-400 text-indigo-300' : 'border-transparent text-slate-500'}`}>Today <span className="ml-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-[9px]">5</span></button><button onClick={() => setRange('Tomorrow')} className={`border-b-2 px-3 pb-3 text-[11px] font-medium ${range === 'Tomorrow' ? 'border-indigo-400 text-indigo-300' : 'border-transparent text-slate-500'}`}>Tomorrow <span className="ml-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-[9px]">1</span></button><button onClick={() => setRange('All')} className={`border-b-2 px-3 pb-3 text-[11px] font-medium ${range === 'All' ? 'border-indigo-400 text-indigo-300' : 'border-transparent text-slate-500'}`}>All</button></div><div className="hidden overflow-x-auto md:block"><table className="w-full text-left"><thead className="text-[10px] uppercase tracking-wider text-slate-600"><tr><th className="px-4 py-3 font-medium">Patient</th><th className="px-4 py-3 font-medium">Appointment</th><th className="px-4 py-3 font-medium">Time</th><th className="px-4 py-3 font-medium">Risk score</th><th className="px-4 py-3 font-medium">Status</th><th className="px-4 py-3" /></tr></thead><tbody>{filtered.map((a) => <tr key={a.id} onClick={() => setSelected(a)} className="cursor-pointer border-t border-white/[0.05] transition hover:bg-white/[0.035]"><td className="px-4 py-3.5"><div className="flex items-center gap-2.5"><div className="grid size-7 place-items-center rounded-lg bg-indigo-500/15 text-[10px] font-semibold text-indigo-300">{a.initials}</div><div><p className="text-[12px] font-medium text-slate-200">{a.name}</p><p className="text-[10px] text-slate-600">{a.phone}</p></div></div></td><td className="px-4 py-3.5"><p className="text-[11px] text-slate-300">{a.type}</p><p className="text-[10px] text-slate-600">{a.location}</p></td><td className="px-4 py-3.5 text-[11px] text-slate-400">{a.time}</td><td className="px-4 py-3.5"><div className="flex items-center gap-2"><div className="h-1.5 w-12 rounded-full bg-white/[0.08]"><div className={`h-full rounded-full ${a.score < 50 ? 'bg-rose-400' : a.score < 70 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${a.score}%` }} /></div><span className="text-[10px] text-slate-400">{a.score}</span></div></td><td className="px-4 py-3.5"><StatusPill status={a.status} /></td><td className="px-4 py-3.5 text-right"><MoreHorizontal size={15} className="text-slate-600" /></td></tr>)}</tbody></table></div><div className="divide-y divide-white/[0.05] md:hidden">{filtered.map((a) => <button onClick={() => setSelected(a)} key={a.id} className="flex w-full items-center justify-between p-4 text-left"><div className="flex items-center gap-3"><div className="grid size-8 place-items-center rounded-lg bg-indigo-500/15 text-[10px] font-semibold text-indigo-300">{a.initials}</div><div><p className="text-[12px] font-medium text-slate-200">{a.name}</p><p className="mt-1 text-[10px] text-slate-500">{a.time} · {a.type}</p></div></div><StatusPill status={a.status} /></button>)}</div></section>
+            <aside className="rounded-2xl border border-white/[0.07] bg-white/[0.025]"><div className="flex items-center justify-between border-b border-white/[0.07] p-4"><div><h2 className="text-sm font-semibold text-white">Live activity</h2><p className="mt-1 text-[11px] text-slate-500">Today, September 13</p></div><Activity size={16} className="text-indigo-300" /></div><div className="p-4">{activity.map(([time, title, name, detail, kind], i) => <div key={title + name} className="relative flex gap-3 pb-5 last:pb-0"><div className="relative z-10 mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border border-white/10 bg-[#111625] text-indigo-300">{kind === 'warning' ? <AlertCircle size={12} className="text-amber-400" /> : kind === 'success' ? <Check size={12} className="text-emerald-400" /> : <Phone size={12} />}</div>{i < activity.length - 1 && <div className="absolute left-3 top-6 h-full w-px bg-white/[0.07]" />}<div className="min-w-0"><div className="flex items-baseline justify-between gap-2"><p className="truncate text-[11px] font-medium text-slate-300">{title}</p><time className="shrink-0 text-[10px] text-slate-600">{time}</time></div><p className="mt-1 text-[11px] text-slate-500">{name}</p><p className="mt-1 text-[10px] text-slate-600">{detail}</p></div></div>)}</div><button onClick={() => setActive('Call Log')} className="flex w-full items-center justify-center gap-1 border-t border-white/[0.07] py-3 text-[11px] font-medium text-indigo-300">View call log <ChevronRight size={13} /></button></aside>
+          </div>
+        </>}
+        {active === 'Appointments' && <div><h1 className="text-2xl font-semibold text-white">Appointments</h1><p className="mt-1 text-sm text-slate-500">Manage every appointment and confirmation.</p><div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold text-white">All appointments</h2><button onClick={() => setShowAdd(true)} className="flex items-center gap-2 rounded-lg bg-indigo-500 px-3 py-2 text-[11px] font-semibold text-white"><Plus size={14} /> Add appointment</button></div><div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{appointments.map(a => <button onClick={() => setSelected(a)} key={a.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-left hover:bg-white/[0.05]"><div className="flex justify-between"><span className="text-xs font-medium text-slate-200">{a.name}</span><StatusPill status={a.status} /></div><p className="mt-2 text-[11px] text-slate-500">{a.date} · {a.time}</p><p className="mt-1 text-[11px] text-slate-600">{a.type}</p></button>)}</div></div></div>}
+        {active === 'Call Log' && <div><h1 className="text-2xl font-semibold text-white">Call Log</h1><p className="mt-1 text-sm text-slate-500">Review every reminder attempt and outcome.</p><div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.025] divide-y divide-white/[0.06]">{activity.concat(activity).map(([time, title, name, detail], i) => <div key={i} className="flex items-center justify-between p-4"><div className="flex items-center gap-3"><div className="grid size-8 place-items-center rounded-lg bg-indigo-500/10 text-indigo-300"><Phone size={14} /></div><div><p className="text-xs font-medium text-slate-200">{title} · {name}</p><p className="mt-1 text-[11px] text-slate-600">{detail}</p></div></div><span className="text-[11px] text-slate-500">Today, {time}</span></div>)}</div></div>}
+        {active === 'Settings' && <div><h1 className="text-2xl font-semibold text-white">Settings</h1><p className="mt-1 text-sm text-slate-500">Tune reminders, scripts, and workspace preferences.</p><div className="mt-6 grid max-w-4xl gap-4"><div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400"><CalendarDays size={17} /></div><div><h2 className="text-sm font-semibold text-white">Calendar connection</h2><p className="mt-1 text-[11px] text-slate-500">Google Calendar · North Clinic</p></div><span className="ml-auto rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] text-emerald-400">Connected</span></div><button onClick={() => notify('Calendar reconnected')} className="mt-4 flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-[11px] text-slate-300"><RefreshCw size={13} /> Reconnect calendar</button></div><div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5"><h2 className="text-sm font-semibold text-white">Reminder script</h2><p className="mt-1 text-[11px] text-slate-500">Your voice assistant uses this context before each call.</p><textarea defaultValue="Hi {{first_name}}, this is NoShowGuard calling on behalf of North Clinic about your appointment at {{time}} today. Can we count on you to make it?" className="mt-4 min-h-28 w-full resize-none rounded-xl border border-white/[0.08] bg-black/10 p-3 text-xs leading-relaxed text-slate-300 outline-none focus:border-indigo-400" /><button onClick={() => notify('Reminder script saved')} className="mt-3 rounded-lg bg-indigo-500 px-3 py-2 text-[11px] font-semibold text-white">Save changes</button></div></div></div>}
+      </main>
+    </div>
+
+    {selected && <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setSelected(null)}><section onClick={e => e.stopPropagation()} className="absolute right-0 top-0 h-full w-full max-w-[480px] overflow-y-auto border-l border-white/10 bg-[#0c111e] shadow-2xl"><div className="flex items-center justify-between border-b border-white/[0.07] p-5"><div><p className="text-[10px] uppercase tracking-widest text-indigo-300">Appointment details</p><h2 className="mt-1 text-lg font-semibold text-white">{selected.name}</h2></div><button onClick={() => setSelected(null)} className="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-white/[0.06]"><X size={17} /></button></div><div className="grid grid-cols-3 gap-px border-b border-white/[0.07] bg-white/[0.07]"><div className="bg-[#0c111e] p-4"><p className="text-[10px] text-slate-600">When</p><p className="mt-1 text-xs text-slate-200">{selected.date}, {selected.time}</p></div><div className="bg-[#0c111e] p-4"><p className="text-[10px] text-slate-600">Risk score</p><p className="mt-1 text-xs text-rose-300">{selected.score}/100</p></div><div className="bg-[#0c111e] p-4"><p className="text-[10px] text-slate-600">Attempts</p><p className="mt-1 text-xs text-slate-200">{selected.attempts} of 3</p></div></div><div className="p-5"><StatusPill status={selected.status} /><div className="mt-6 flex gap-1 rounded-lg bg-white/[0.04] p-1"><button className="flex-1 rounded-md bg-indigo-500/15 py-2 text-[11px] font-medium text-indigo-300">Conversation</button><button className="flex-1 rounded-md py-2 text-[11px] text-slate-500">Details</button></div><div className="mt-6 space-y-4"><div className="flex gap-3"><div className="grid size-7 shrink-0 place-items-center rounded-full bg-indigo-500/15 text-indigo-300"><Sparkles size={13} /></div><div className="rounded-2xl rounded-tl-sm bg-white/[0.05] p-3 text-[11px] leading-relaxed text-slate-300">Hi {selected.name.split(' ')[0]}, this is NoShowGuard calling on behalf of North Clinic. Are you still able to make your appointment at {selected.time}?</div></div><div className="flex justify-end"><div className="max-w-[78%] rounded-2xl rounded-tr-sm bg-indigo-500/15 p-3 text-[11px] leading-relaxed text-indigo-100">I&apos;m not sure yet. Can you call me back later?</div></div><div className="rounded-xl border border-amber-400/15 bg-amber-400/5 p-3 text-[11px] text-amber-200"><div className="flex items-center gap-2 font-medium"><Clock3 size={13} /> Attempt {selected.attempts} of 3 · follow-up scheduled</div><p className="mt-2 text-amber-200/60">We&apos;ll try again in 45 minutes if no response is received.</p></div></div><div className="mt-8 grid gap-2"><button onClick={() => { notify('Appointment marked as resolved'); setSelected(null) }} className="flex items-center justify-center gap-2 rounded-lg bg-indigo-500 py-2.5 text-[11px] font-semibold text-white"><Check size={14} /> Mark as resolved</button><button onClick={() => notify('Reschedule link sent')} className="flex items-center justify-center gap-2 rounded-lg border border-white/10 py-2.5 text-[11px] font-medium text-slate-300"><CalendarDays size={14} /> Send reschedule link</button></div></div></section></div>}
+
+    {showAdd && <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={() => setShowAdd(false)}><div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111726] p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-white">Add appointment</h2><p className="mt-1 text-[11px] text-slate-500">Create a new reminder workflow.</p></div><button onClick={() => setShowAdd(false)} className="text-slate-500"><X size={17} /></button></div><div className="mt-5 grid gap-3"><input placeholder="Patient name" className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-600" /><input placeholder="Phone number" className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-600" /><div className="grid grid-cols-2 gap-3"><input placeholder="Date" className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-600" /><input placeholder="Time" className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-600" /></div></div><button onClick={() => { setShowAdd(false); notify('Appointment added to today') }} className="mt-5 w-full rounded-lg bg-indigo-500 py-2.5 text-xs font-semibold text-white">Create appointment</button></div></div>}
+    {showCommand && <div className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/60 p-4 pt-24" onClick={() => setShowCommand(false)}><div onClick={e => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#111726] shadow-2xl"><div className="flex items-center gap-3 border-b border-white/[0.08] p-4"><Command size={16} className="text-indigo-300" /><input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Search appointments, activity, settings..." className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-600" /><kbd className="text-[10px] text-slate-600">ESC</kbd></div><div className="p-2"><p className="px-3 py-2 text-[10px] uppercase tracking-wider text-slate-600">Quick actions</p>{[['Go to Appointments', CalendarDays], ['Open Call Log', Phone], ['Workspace Settings', Settings]].map(([label, Icon]) => <button key={label as string} onClick={() => { setActive((label as string).replace('Go to ', '').replace('Open ', '').replace('Workspace ', '')); setShowCommand(false) }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs text-slate-300 hover:bg-white/[0.06]"><Icon size={15} className="text-slate-500" />{label as string}</button>)}</div></div></div>}
+    {toast && <div className="fixed bottom-5 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-[#171d2d] px-4 py-3 text-xs text-slate-200 shadow-2xl"><Check size={14} className="text-emerald-400" />{toast}</div>}
+  </div>
+}
+
+export default function Page() { return <App /> }
