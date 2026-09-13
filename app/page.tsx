@@ -63,7 +63,7 @@ function StatusPill({ status }: { status: Status }) {
 
 function Avatar({ initials }: { initials: string }) {
   return (
-    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-violet-100 text-[10px] font-semibold text-violet-700">
       {initials}
     </span>
   )
@@ -139,6 +139,8 @@ export default function App() {
   const [showAdd, setShowAdd] = useState(false)
   const [toast, setToast] = useState('')
   const [researchedTime, setRescheduleTime] = useState('')
+  const [view, setView] = useState<'List' | 'Board' | 'Calendar'>('List')
+  const [appointmentsExpanded, setAppointmentsExpanded] = useState(true)
 
   const filtered = useMemo(() => {
     return appointments.filter(
@@ -172,16 +174,16 @@ export default function App() {
         {/* Logo */}
         <div className="flex h-14 items-center px-4">
           {collapsed ? (
-            <div className="grid size-8 place-items-center rounded-lg bg-indigo-600 text-white">
+            <div className="grid size-8 place-items-center rounded-lg bg-violet-600 text-white">
               <ShieldCheck size={18} />
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="grid size-8 place-items-center rounded-lg bg-indigo-600 text-white">
+              <div className="grid size-8 place-items-center rounded-lg bg-violet-600 text-white">
                 <ShieldCheck size={18} />
               </div>
               <span className="text-sm font-semibold tracking-tight">
-                NoShow<span className="text-indigo-600">Guard</span>
+                NoShow<span className="text-violet-600">Guard</span>
               </span>
             </div>
           )}
@@ -194,7 +196,7 @@ export default function App() {
               setShowAdd(true)
               setSidebarOpen(false)
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white hover:bg-violet-700 transition"
           >
             <Plus size={14} />
             {!collapsed && 'Add appointment'}
@@ -220,24 +222,40 @@ export default function App() {
         <nav className="mt-6 flex-1 px-2">
           {!collapsed && <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Workspace</p>}
           {nav.map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              onClick={() => {
-                setPage(label)
-                setSidebarOpen(false)
-              }}
-              title={label}
-              className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition ${
-                page === label
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              } ${collapsed ? 'justify-center' : ''}`}
-            >
-              <Icon size={16} />
-              {!collapsed && label}
-            </button>
+            <div key={label}>
+              <button
+                onClick={() => {
+                  setPage(label)
+                  setSidebarOpen(false)
+                }}
+                title={label}
+                className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition ${
+                  page === label
+                    ? 'bg-violet-50 text-violet-700'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                } ${collapsed ? 'justify-center' : ''}`}
+              >
+                <Icon size={16} />
+                {!collapsed && <><span className="flex-1 text-left">{label}</span>{label === 'Appointments' && <ChevronDown size={13} className={appointmentsExpanded ? '' : '-rotate-90'} />}</>}
+              </button>
+              {!collapsed && label === 'Appointments' && appointmentsExpanded && (
+                <div className="mb-2 ml-8 flex flex-col gap-0.5 border-l border-slate-200 pl-2">
+                  {[['All Appointments', appointments.length], ['Today', 5], ['Needs Attention', 2]].map(([child, count]) => (
+                    <button key={child} onClick={() => { setPage('Appointments'); setRange(child === 'Today' ? 'Today' : child === 'All Appointments' ? 'All' : 'Today'); setSidebarOpen(false) }} className="flex items-center justify-between rounded-md px-2 py-1.5 text-[11px] text-slate-500 hover:bg-slate-50 hover:text-slate-900">
+                      <span>{child}</span><span className="rounded-full bg-slate-100 px-1.5 py-0.5 tabular-nums">{count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </nav>
+
+        {!collapsed && (
+          <button onClick={() => notify('NoShowGuard AI is ready to help')} className="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs font-medium text-violet-700 hover:bg-violet-100">
+            <Sparkles size={14} /> Ask NoShowGuard AI
+          </button>
+        )}
 
         {/* Integration Status */}
         {!collapsed && (
@@ -249,7 +267,7 @@ export default function App() {
             <p className="mt-1 text-[10px] text-slate-500">Google Calendar · Downtown Clinic</p>
             <button
               onClick={() => notify('Calendar sync is up to date')}
-              className="mt-2 text-[10px] font-medium text-indigo-600 hover:text-indigo-700"
+              className="mt-2 text-[10px] font-medium text-violet-600 hover:text-violet-700"
             >
               Manage connection <ChevronRight size={11} className="inline" />
             </button>
@@ -283,7 +301,14 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {page === 'Dashboard' && (
+              <div className="hidden items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 sm:flex">
+                {(['List', 'Board', 'Calendar'] as const).map((item) => (
+                  <button key={item} onClick={() => setView(item)} className={`rounded-md px-3 py-1.5 text-[11px] font-medium transition ${view === item ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>{item}</button>
+                ))}
+              </div>
+            )}
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden h-8 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-[11px] text-slate-400 hover:text-slate-700 sm:flex"
@@ -310,8 +335,8 @@ export default function App() {
             <>
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="flex items-center gap-2 text-[11px] font-medium text-indigo-600">
-                    <span className="size-1.5 rounded-full bg-indigo-600" />
+                  <p className="flex items-center gap-2 text-[11px] font-medium text-violet-600">
+                    <span className="size-1.5 rounded-full bg-violet-600" />
                     Tuesday, September 13, 2026
                   </p>
                   <h1 className="mt-2 text-2xl font-semibold text-slate-900">Good morning, Alex</h1>
@@ -347,7 +372,7 @@ export default function App() {
                 ].map(({ label, value, change, sub, icon: Icon, down }) => (
                   <div key={label} className="rounded-lg border border-slate-200 bg-white p-4">
                     <div className="flex items-start justify-between">
-                      <div className="grid size-8 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <div className="grid size-8 place-items-center rounded-lg bg-violet-50 text-violet-600">
                         <Icon size={15} />
                       </div>
                       <Sparkline value={down ? -1 : 1} />
@@ -366,6 +391,23 @@ export default function App() {
                   </div>
                 ))}
               </div>
+
+              {view === 'Board' && (
+                <div className="mb-6 grid gap-3 overflow-x-auto pb-2 md:grid-cols-5">
+                  {(['Needs attention', 'Confirmed', 'Rescheduled', 'No answer', 'Cancelled'] as Status[]).map((status) => (
+                    <section key={status} className="min-w-[190px] rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-xs font-semibold text-slate-700"><StatusPill status={status} /></div><span className="text-[11px] text-slate-400">{appointments.filter((a) => a.status === status).length}</span></div>
+                      <div className="flex flex-col gap-2">{appointments.filter((a) => a.status === status).map((apt) => <button key={apt.id} onClick={() => setSelected(apt)} className="rounded-lg border border-slate-200 bg-white p-3 text-left hover:border-violet-200 hover:shadow-sm"><p className="truncate text-xs font-semibold text-slate-800">{apt.name}</p><p className="mt-1 text-[11px] text-slate-500">{apt.service}</p><p className="mt-2 text-[11px] text-slate-500">{apt.date}, {apt.time}</p><div className="mt-2 flex items-center gap-2"><Avatar initials={apt.staffInitials} /><span className="text-[10px] text-slate-500">{apt.attempts} of {apt.maxAttempts}</span></div></button>)}</div>
+                    </section>
+                  ))}
+                </div>
+              )}
+              {view === 'Calendar' && (
+                <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
+                  <div className="mb-4 flex items-center justify-between"><h2 className="text-sm font-semibold text-slate-900">September 2026</h2><div className="flex gap-1"><button className="grid size-7 place-items-center rounded-md border border-slate-200"><ChevronLeft size={14} /></button><button className="grid size-7 place-items-center rounded-md border border-slate-200"><ChevronRight size={14} /></button></div></div>
+                  <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day) => <div key={day} className="bg-slate-50 p-2 text-center text-[10px] font-semibold text-slate-500">{day}</div>)}{Array.from({length: 35}, (_, i) => <div key={i} className="min-h-20 bg-white p-2 text-[11px] text-slate-500"><span className={i === 15 ? 'grid size-5 place-items-center rounded-full bg-violet-600 font-semibold text-white' : ''}>{i < 15 ? i + 17 : i - 14}</span>{i === 15 && <div className="mt-2 rounded bg-emerald-50 px-1 py-0.5 text-[9px] text-emerald-700">5 confirmed</div>}</div>)}</div>
+                </div>
+              )}
 
               {/* Appointments + Activity */}
               <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
@@ -401,7 +443,7 @@ export default function App() {
                           onClick={() => setRange(tab)}
                           className={`border-b-2 px-3 pb-3 text-xs font-medium transition ${
                             range === tab
-                              ? 'border-indigo-600 text-indigo-700'
+                              ? 'border-violet-600 text-violet-700'
                               : 'border-transparent text-slate-400 hover:text-slate-600'
                           }`}
                         >
@@ -526,14 +568,14 @@ export default function App() {
                       <h2 className="text-sm font-semibold text-slate-900">Live activity</h2>
                       <p className="mt-1 text-[11px] text-slate-500">Today, September 13</p>
                     </div>
-                    <Activity size={15} className="text-indigo-600" />
+                    <Activity size={15} className="text-violet-600" />
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
                     {activity.map((entry, i) => (
                       <div key={i} className="flex gap-3 pb-4 last:pb-0">
                         <div
                           className={`relative mt-1 flex size-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white ${
-                            i === 0 ? 'ring-4 ring-indigo-50' : ''
+                            i === 0 ? 'ring-4 ring-violet-50' : ''
                           }`}
                         >
                           {entry.kind === 'warning' && (
@@ -543,7 +585,7 @@ export default function App() {
                             <Check size={12} className="text-emerald-500" />
                           )}
                           {entry.kind === 'info' && (
-                            <Phone size={12} className="text-indigo-600" />
+                            <Phone size={12} className="text-violet-600" />
                           )}
                         </div>
                         {i < activity.length - 1 && (
@@ -562,7 +604,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => setPage('Call Log')}
-                    className="border-t border-slate-200 py-3 text-center text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                    className="border-t border-slate-200 py-3 text-center text-xs font-medium text-violet-600 hover:text-violet-700"
                   >
                     View call log <ChevronRight size={12} className="inline" />
                   </button>
@@ -578,7 +620,7 @@ export default function App() {
                   <button
                     key={apt.id}
                     onClick={() => setSelected(apt)}
-                    className="rounded-lg border border-slate-200 bg-white p-4 text-left hover:border-indigo-300 hover:shadow-sm transition"
+                    className="rounded-lg border border-slate-200 bg-white p-4 text-left hover:border-violet-300 hover:shadow-sm transition"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-slate-900">{apt.name}</span>
@@ -623,7 +665,7 @@ export default function App() {
                             <div className="flex items-center gap-2">
                               <div className="h-2 w-24 rounded-full bg-slate-200">
                                 <div
-                                  className="h-2 rounded-full bg-indigo-600"
+                                  className="h-2 rounded-full bg-violet-600"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
@@ -647,7 +689,7 @@ export default function App() {
                 {activity.concat(activity).map((entry, i) => (
                   <div key={i} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
-                      <div className="grid size-8 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <div className="grid size-8 place-items-center rounded-lg bg-violet-50 text-violet-600">
                         <Phone size={14} />
                       </div>
                       <div>
@@ -671,7 +713,7 @@ export default function App() {
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
-                      <div className="grid size-9 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <div className="grid size-9 place-items-center rounded-lg bg-violet-50 text-violet-600">
                         <Calendar size={17} />
                       </div>
                       <div>
@@ -683,7 +725,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={() => notify('Calendar reconnected')}
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      className="text-xs font-medium text-violet-600 hover:text-violet-700"
                     >
                       Reconnect
                     </button>
@@ -712,7 +754,7 @@ export default function App() {
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
-                      <div className="grid size-9 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <div className="grid size-9 place-items-center rounded-lg bg-violet-50 text-violet-600">
                         <FileText size={17} />
                       </div>
                       <div>
@@ -725,11 +767,11 @@ export default function App() {
                   </div>
                   <textarea
                     defaultValue="Hi {{client_name}}, this is NoShowGuard calling on behalf of Downtown Clinic about your {{service}} at {{time}}. Can we count on you to make it?"
-                    className="mt-3 min-h-24 w-full resize-none rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-mono text-[11px] outline-none focus:border-indigo-300"
+                    className="mt-3 min-h-24 w-full resize-none rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-mono text-[11px] outline-none focus:border-violet-300"
                   />
                   <button
                     onClick={() => notify('Call script saved')}
-                    className="mt-3 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                    className="mt-3 text-xs font-medium text-violet-600 hover:text-violet-700"
                   >
                     Save changes
                   </button>
@@ -744,11 +786,11 @@ export default function App() {
                     </div>
                   </div>
                   <div className="mt-3 h-2 w-full rounded-full bg-slate-200">
-                    <div className="h-2 rounded-full bg-indigo-600" style={{ width: '35%' }} />
+                    <div className="h-2 rounded-full bg-violet-600" style={{ width: '35%' }} />
                   </div>
                   <button
                     onClick={() => notify('Upgrade info opened')}
-                    className="mt-3 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                    className="mt-3 text-xs font-medium text-violet-600 hover:text-violet-700"
                   >
                     Request more calls or upgrade plan
                   </button>
@@ -795,14 +837,14 @@ export default function App() {
             </div>
 
             {/* Meeting Prep */}
-            <div className="border-b border-slate-200 bg-indigo-50 p-4">
+            <div className="border-b border-slate-200 bg-violet-50 p-4">
               <div className="flex items-start gap-2">
-                <Sparkles size={14} className="mt-0.5 flex-shrink-0 text-indigo-600" />
+                <Sparkles size={14} className="mt-0.5 flex-shrink-0 text-violet-600" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-700">
                     Meeting prep
                   </p>
-                  <p className="mt-2 text-xs leading-relaxed text-indigo-900">
+                  <p className="mt-2 text-xs leading-relaxed text-violet-900">
                     {selected.prep}
                   </p>
                 </div>
@@ -817,7 +859,7 @@ export default function App() {
                   onClick={() => setDetailTab(tab)}
                   className={`flex-1 border-b-2 px-4 py-3 text-xs font-medium transition ${
                     detailTab === tab
-                      ? 'border-indigo-600 text-indigo-700'
+                      ? 'border-violet-600 text-violet-700'
                       : 'border-transparent text-slate-500 hover:text-slate-700'
                   }`}
                 >
@@ -840,7 +882,7 @@ export default function App() {
                       <div
                         className={`max-w-xs rounded-lg px-3 py-2 text-xs leading-relaxed ${
                           msg.role === 'client'
-                            ? 'bg-indigo-50 text-indigo-900'
+                            ? 'bg-violet-50 text-violet-900'
                             : 'bg-slate-100 text-slate-900'
                         }`}
                       >
@@ -861,7 +903,7 @@ export default function App() {
                     <div className="mt-3 space-y-2">
                       {Array.from({ length: selected.attempts }).map((_, i) => (
                         <div key={i} className="flex gap-3">
-                          <div className="mt-0.5 flex size-5 items-center justify-center rounded-full border border-indigo-300 bg-indigo-50 text-[10px] font-semibold text-indigo-700">
+                          <div className="mt-0.5 flex size-5 items-center justify-center rounded-full border border-violet-300 bg-violet-50 text-[10px] font-semibold text-violet-700">
                             {i + 1}
                           </div>
                           <div className="flex-1">
@@ -894,7 +936,7 @@ export default function App() {
                             notify('Reschedule confirmed')
                             setRescheduleTime('')
                           }}
-                          className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                          className="mt-2 w-full rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700"
                         >
                           Confirm reschedule
                         </button>
@@ -925,7 +967,7 @@ export default function App() {
                   className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition ${
                     selected.attempts >= selected.maxAttempts
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-violet-600 text-white hover:bg-violet-700'
                   }`}
                 >
                   Retry call
@@ -962,7 +1004,7 @@ export default function App() {
                 <input
                   type="text"
                   placeholder="e.g., Jamie Roberts"
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-300"
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-violet-300"
                 />
               </div>
               <div>
@@ -970,12 +1012,12 @@ export default function App() {
                 <input
                   type="tel"
                   placeholder="+1 (555) 123-4567"
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-300"
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-violet-300"
                 />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-700">Service</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-300">
+                <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-violet-300">
                   <option>Initial consultation</option>
                   <option>Follow-up visit</option>
                   <option>Annual check-up</option>
@@ -983,7 +1025,7 @@ export default function App() {
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-700">Assigned staff</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-300">
+                <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-violet-300">
                   {staff.map((s) => (
                     <option key={s.name}>{s.name}</option>
                   ))}
@@ -993,7 +1035,7 @@ export default function App() {
                 <label className="text-xs font-medium text-slate-700">Date & time</label>
                 <input
                   type="datetime-local"
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-300"
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-violet-300"
                 />
               </div>
             </div>
@@ -1009,14 +1051,14 @@ export default function App() {
                   notify('Appointment created and call scheduled')
                   setShowAdd(false)
                 }}
-                className="flex-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700"
+                className="flex-1 rounded-lg bg-violet-600 px-3 py-2 text-xs font-medium text-white hover:bg-violet-700"
               >
                 Add & schedule call
               </button>
             </div>
             <p className="mt-4 text-center text-[10px] text-slate-500">
               or{' '}
-              <button className="font-medium text-indigo-600 hover:text-indigo-700">
+              <button className="font-medium text-violet-600 hover:text-violet-700">
                 bulk import via CSV
               </button>
             </p>

@@ -175,7 +175,7 @@
   --card-foreground: #171717;
   --popover: #FFFFFF;
   --popover-foreground: #171717;
-  --primary: #4F46E5;
+  --primary: #7C3AED;
   --primary-foreground: #FFFFFF;
   --secondary: #F5F5F5;
   --secondary-foreground: #525252;
@@ -185,7 +185,7 @@
   --accent-foreground: #4338CA;
   --border: #E5E5E5;
   --input: #E5E5E5;
-  --ring: #4F46E5;
+  --ring: #7C3AED;
   --radius: 0.5rem;
 }
 
@@ -198,7 +198,7 @@ button, a, input, textarea, select {
 }
 
 *:focus-visible {
-  outline: 2px solid #4F46E5;
+  outline: 2px solid #7C3AED;
   outline-offset: 2px;
 }
 
